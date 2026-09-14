@@ -1,5 +1,9 @@
 # ============================================================
-# 复现 Wang2009 方法
+# 基于之前使用的 SIM_functions.R 修改，解决高维速度过慢的问题。
+# 主要修改：
+# 1) compute_R_hat 不再显式构造 n×n 投影矩阵；
+# 2) compute_hat_S_star 不再显式构造 P_theta，且 dotFd 使用稳定版 dot_Fd；
+# 3) estimate_theta 在高维时仍用同一准则/同一梯度，但减少多启动和兜底优化。
 # ============================================================
 
 library(splines2)
@@ -143,6 +147,8 @@ compute_dot_Bp <- function(U_theta, X_std, theta, p, N, a) {
 
 # ========================
 # 经验风险（目标函数）：R_hat^*
+# 改动：不再显式构造 n×n 的 P_theta，而是链式计算 P_theta Y。
+# 数学等价于 B(B'B)^(-1)B'Y，但高维/大样本时快很多。
 # ========================
 compute_R_hat <- function(theta_minus_d, X_std, Y, a, N, ridge = getOption("SI_ridge", 0)) {
   d <- ncol(X_std)
@@ -174,6 +180,9 @@ compute_R_hat <- function(theta_minus_d, X_std, Y, a, N, ridge = getOption("SI_r
 
 # ========================
 # score vector S_hat^*，对应论文 Lemma 3.1
+# 改动：
+# 1) 不显式构造 n×n 的 P_theta；
+# 2) dotFd 统一调用稳定版 dot_Fd()，高维时用 lgamma 避免溢出。
 # ========================
 compute_hat_S_star <- function(theta_minus_d, X_std, Y, a, N, ridge = getOption("SI_ridge", 0)) {
   d <- ncol(X_std); n <- nrow(X_std)
@@ -269,7 +278,7 @@ compute_hat_S_star <- function(theta_minus_d, X_std, Y, a, N, ridge = getOption(
 # ========================
 # 估计 theta：复现论文 Step 3
 # ========================
-estimate_theta <- function(X_std, Y,
+estimate_theta <- function(X_std, Y, a_si, 
                            c_margin = 0.01,
                            a_q = 0.995,
                            maxN = 5,
@@ -311,8 +320,13 @@ estimate_theta <- function(X_std, Y,
     ))
   }
   
-  X_norm <- sqrt(rowSums(X_std^2))
-  a <- as.numeric(quantile(X_norm, a_q_use))
+  if (is.null(a_si)) {
+    X_norm <- sqrt(rowSums(X_std^2))
+    a <- as.numeric(quantile(X_norm, a_q_use))
+  } else {
+    a <- as.numeric(a_si)
+  }
+  
   N <- min(calc_N(n = n), maxN)
   
   .proj <- function(v) {
@@ -441,6 +455,8 @@ estimate_theta <- function(X_std, Y,
 
 
 
+
+
 # ========================
 # 估计 g：对应论文 Step 4 和公式 (2.10)
 # ========================
@@ -462,7 +478,6 @@ estimate_g <- function(theta_hat, X_std, Y, a, N) {
   inv_res <- .safe_inv_sym(BtB, ridge = getOption("SI_ridge", 0))
   beta_hat <- inv_res$inv %*% t(B_theta_hat) %*% Y
   
-  # 新增
   coef_hat <- inv_res$inv %*% crossprod(B_theta_hat, Y)  # spline least squares estimator
   
   g_hat <- function(v) {
@@ -483,7 +498,7 @@ estimate_g <- function(theta_hat, X_std, Y, a, N) {
   list(g_hat = g_hat, 
        g_prime_hat = g_prime_hat, 
        X_theta_hat = X_theta_hat,
-       coef_hat = coef_hat   # 新增
+       coef_hat = coef_hat   
        )
 }
 
@@ -492,42 +507,32 @@ estimate_g <- function(theta_hat, X_std, Y, a, N) {
 # ========================
 # 主函数：输入原始 Z，内部标准化
 # ========================
-spline_single_index <- function(Z_train, Y, ...) {
+spline_single_index <- function(Z_train, Y, Z_mu, Z_sd, a_si) {
   
   Z_train <- as.matrix(Z_train)
   Y <- as.numeric(Y)
-  
-  Z_mu <- colMeans(Z_train)
-  Z_sd <- apply(Z_train, 2, sd)
-  Z_sd[!is.finite(Z_sd) | Z_sd == 0] <- 1
-  
+  Z_mu <- Z_mu 
+  Z_sd <- Z_sd
   Z_std <- sweep(sweep(Z_train, 2, Z_mu, "-"), 2, Z_sd, "/")
   
-  theta_result <- estimate_theta(Z_std, Y, ...)
+  theta_result <- estimate_theta(Z_std, Y, a_si)
   
   g_result <- estimate_g(
     theta_hat = theta_result$theta_hat,
     X_std = Z_std,
     Y = Y,
-    a = theta_result$a,
+    a = a_si,
     N = theta_result$N
   )
   
   Y_hat <- g_result$g_hat(g_result$X_theta_hat)
   mse <- mean((Y - Y_hat)^2)
   
-  
-  theta_hat_std <- theta_result$theta_hat
-  
-  ## 把标准化尺度 theta 转回原始 Z 尺度，方便和 theta_true 比较
-  theta_hat_orig <- theta_hat_std / Z_sd
-  theta_hat_orig <- normalize_theta(theta_hat_orig)
-  
+  theta_hat_std <- theta_result$theta_hat  # 标准化尺度theta
+
   
   list(
     theta_hat = theta_hat_std,
-    theta_hat_std = theta_hat_std,
-    theta_hat_orig = theta_hat_orig,
     g_hat = g_result$g_hat,
     g_prime_hat = g_result$g_prime_hat, 
     X_theta_hat = g_result$X_theta_hat,
@@ -536,8 +541,7 @@ spline_single_index <- function(Z_train, Y, ...) {
     Y_hat = Y_hat,
     mse = mse,
     
-    # 新增
-    g_coef_hat = g_result$coef_hat,   # 提取出来，用于后面取平均，得到平均g函数。
+    g_coef_hat = g_result$coef_hat,   
     Z_mu = Z_mu,
     Z_sd = Z_sd,
     theta_version = theta_result$version,
@@ -553,31 +557,16 @@ spline_single_index <- function(Z_train, Y, ...) {
 ## =====================================================
 ## predict：输入原始 Z_new，返回 R 的预测值
 ## =====================================================
-predict_spline_single_index <- function(model, X_new_std) {
-  
-  Z_new <- as.matrix(X_new_std)
-  
-  Z_new_std <- sweep(
-    sweep(Z_new, 2, model$Z_mu, "-"),
-    2, model$Z_sd, "/"
-  )
-  
-  X_new_theta <- as.vector(Z_new_std %*% model$theta_hat)
-  Y_new <- model$g_hat(X_new_theta)
-  Y_new
-}
 
-
-
-# 只用合并后的 theta 和 g_coef 就能预测
-predict_merged_si <- function(theta_merged, g_coef_merged, Z_new, Z_mu, Z_sd, N, a, d) {
+predict_si <- function(theta, g_coef, Z_new, Z_mu, Z_sd, N, a, d) {
+  
   Z_new <- as.matrix(Z_new)
   
   # 标准化（必须用训练时的 mu 和 sd）
   Z_new_std <- sweep(sweep(Z_new, 2, Z_mu, "-"), 2, Z_sd, "/")
   
   # 指标
-  index_new <- as.vector(Z_new_std %*% theta_merged)
+  index_new <- as.vector(Z_new_std %*% theta)
   
   # 构造样条基（和 estimate_g 完全一样）
   knots <- seq(1/(N+1), N/(N+1), by = 1/(N+1))
@@ -590,7 +579,7 @@ predict_merged_si <- function(theta_merged, g_coef_merged, Z_new, Z_mu, Z_sd, N,
     intercept = TRUE
   ))
   
-  as.vector(B_new %*% g_coef_merged)
+  as.vector(B_new %*% g_coef)
 }
 
 

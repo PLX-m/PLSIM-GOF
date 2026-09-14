@@ -34,11 +34,11 @@ PLSIM_test_split_ratio_cross2 <- function(
   Z <- as.matrix(Z)
   X <- as.matrix(X)
   Y <- as.numeric(Y)
-
+  
   n <- nrow(Z)
   p <- ncol(X)
   q <- ncol(Z)
-
+  
   eps_num <- 1e-12
   
   stopifnot(length(Y) == nrow(X), nrow(X) == nrow(Z))
@@ -94,7 +94,7 @@ PLSIM_test_split_ratio_cross2 <- function(
   split1 <- make_half_split(id_part1)
   split2 <- make_half_split(id_part2)
   
-
+  
   id_si_scale <- c(
     split1$id_ce, split1$id_beta,
     split2$id_ce, split2$id_beta
@@ -500,7 +500,7 @@ PLSIM_test_split_ratio_cross2 <- function(
       linear_orth_after <- max(
         abs(as.vector(crossprod(X_use, f_orth)) / n_use)
       )
-
+      
       list(
         f_orth = f_orth,
         linear_orth_before = linear_orth_before,
@@ -511,7 +511,7 @@ PLSIM_test_split_ratio_cross2 <- function(
     ############################################################
     ## 4. 最终方法：spline + linear + theta-score 联合正交化
     ############################################################
-
+    
     spline_orth_before <- NA_real_
     spline_orth_after <- NA_real_
     theta_orth_before <- NA_real_
@@ -566,7 +566,7 @@ PLSIM_test_split_ratio_cross2 <- function(
       # oracle / 关闭 SI 正交化时，仅线性正交化
       linear_final_fit <- linear_orthogonalize(f_use)
       f_orth_joint <- linear_final_fit$f_orth
-     
+      
       linear_orth_before_final <- linear_final_fit$linear_orth_before
       linear_orth_after_final <- linear_final_fit$linear_orth_after
     }
@@ -619,10 +619,10 @@ PLSIM_test_split_ratio_cross2 <- function(
       Zn = Zn,
       p_value = p_value,
       n_use = n_use,
-     
+      
       Zn_linear = Zn_linear,
       p_linear = p_linear,
-
+      
       # 线性正交化诊断
       linear_orth_before_final = linear_orth_before_final,
       linear_orth_after_final = linear_orth_after_final,
@@ -714,21 +714,32 @@ PLSIM_test_split_ratio_cross2 <- function(
 }
 
 
-
-generate_PLSIM_data <- function(
-    n = 800, p = 10, q = 10, s = 10, c=1,
-    scenario = c("H0", "case1", "case2", "case3"),
+generate_PLSIM_data_signal <- function(
+    n = 800, p = 20, q = 20, s = 20, c = 1, signal = 0, m = 0,
+    scenario = c("H0", "H1-low", "H1-high"),
     sigma0 = sqrt(1/2)
 ){
   scenario <- match.arg(scenario)
   
-  # 1) 生成协变量
-  X <- matrix(rnorm(n * p), nrow = n, ncol = p)
+  # 1) 生成协变量 Z
   Z <- matrix(
     qnorm(runif(n * q, pnorm(-2.5), pnorm(2.5))),
     nrow = n,
     ncol = q
   )
+  
+  # 2) X: 条件均值 muX = Z %*% Bx + IID 随机误差
+  Bx <- matrix(0, nrow = q, ncol = p)
+  m_corr <- min(m, p, q)
+  
+  for (j in 1:m_corr) {
+    Bx[j, j] <- signal
+  }
+  
+  muX <- Z %*% Bx
+  Ex <- matrix(rnorm(n * p), nrow = n, ncol = p)
+  
+  X <- muX + Ex
   
   # 2) 单位向量系数
   beta <- numeric(p)               # 全部置 0
@@ -742,28 +753,25 @@ generate_PLSIM_data <- function(
   # 3) 单指标 
   t_val  <- as.vector(Z %*% theta)
   linear_val = as.vector(X %*% beta)
-  # Y_base <- as.vector(X %*% beta) + t_val^2  # data1
-  # Y_base <- as.vector(X %*% beta) + cos(2*t_val)  # data2
-  Y_base <- as.vector(X %*% beta) + exp(-t_val^2)  # data3
+  Y_base <- as.vector(X %*% beta) + cos(2*t_val)  
+  
   
   dev <- rep(0, n)    # 默认无偏离，满足H0
   sigma <- rep(sigma0, n) 
   
   # 4) H1 场景
-  if (scenario == "case1") {
-    if (p < 4) stop("case1 需要 p >= 4")
-    dev <- X[,1]^3 + X[,2]^2 + 3*exp(X[,3]) + 2*abs(X[,3])*abs(X[,4])  # t_val^2
+  if (scenario == "H1-low") {
+    if (q < 4) stop("H1-low 需要 q >= 4")
     
-  } else if (scenario == "case2") {
-    if (q < 4) stop("case2 需要 q >= 4")
-    dev <- Z[,1]^3 + Z[,2]^2 + Z[,3]^2 + Z[,4]^2  # cos(2*t_val)
+    dev <- Z[,1]^3 + Z[,2]^2 + Z[,3]^2 + Z[,4]^2
     
-  } else if (scenario == "case3") {
-    if (p < 3 || q < 2) stop("case3 需要 p >= 3 且 q >= 2")
-    dev <- (abs(X[,1])+abs(Z[,1]))^2 + 0.5*exp(X[,2]) + Z[,2]*X[,3]  # exp(-t_val^2)
+  } else if (scenario == "H1-high") {
+    if (q < 6) stop("H1-high 需要 q >= 6")
+
+    dev <- Z[,1]^3 + Z[,2]^2 + 2*exp(Z[,3])^3 + sin(Z[,4])^3 + 3*abs(Z[,5]) + abs(Z[,6])^3  
+  }
     
-  } 
-  
+ 
   # 5) 生成响应
   eps <- rnorm(n, mean = 0, sd = sigma)
   Y   <- Y_base + c*dev + eps
@@ -777,11 +785,12 @@ generate_PLSIM_data <- function(
 start_time <- Sys.time()
 
 n = 800
-p = 10
-q = 10
-s = 10
+p = 20
+q = 20
+s = 20
 
-data <- generate_PLSIM_data(n = n, p = p, q = q, s = s, scenario = "H0", c = 1)
+data <- generate_PLSIM_data_signal(n = n, p = p, q = q, s = s, scenario = "H0", c = 1,
+                                   signal = 0.6, m = p)
 Y = data[[1]]
 X = data[[2]]
 Z = data[[3]]
@@ -809,45 +818,6 @@ result$stat_21$p_value
 result$p_CCT
 
 
-cat("linear: \n")
-result$stat_12$Zn_linear
-result$stat_12$p_linear
-
-result$stat_21$Zn_linear
-result$stat_21$p_linear
-
-result$p_CCT_linear
-
-
-# 正交化诊断
-# 12:
-result$stat_12$linear_orth_before_final
-result$stat_12$linear_orth_after_final
-result$stat_12$spline_orth_before
-result$stat_12$spline_orth_after
-result$stat_12$theta_orth_before
-result$stat_12$theta_orth_after
-
-result$stat_12$linear_kkt_ratio          # <=1
-result$stat_12$theta_kkt_ratio           # <=1
-result$stat_12$theta_kkt_ratio_by_fold   # <=1
-
-
-# 21:
-result$stat_21$linear_orth_before_final
-result$stat_21$linear_orth_after_final
-result$stat_21$spline_orth_before
-result$stat_21$spline_orth_after
-result$stat_21$theta_orth_before
-result$stat_21$theta_orth_after
-
-result$stat_21$linear_kkt_ratio          # <=1
-result$stat_21$theta_kkt_ratio           # <=1
-result$stat_21$theta_kkt_ratio_by_fold   # <=1
-
-
-
-
 
 
 # =========================
@@ -862,7 +832,7 @@ py_bin  <- "D:/Anaconda_envs/envs/myenv/python.exe"  # change this path to your 
 py_file <- "code/python_code.py"
 
 .EXPORT_FUNS <- c(
-  "generate_PLSIM_data", 
+  "generate_PLSIM_data_signal", 
   "build_si_basis", "build_oof_theta_score", 
   "joint_orthogonalize_score", "PLSIM_test_split_ratio_cross2",
   # 单指标相关函数
@@ -921,6 +891,8 @@ run_power_PLSIM <- function(
     s        = 10,
     scenario = "H0",
     c        = 1,
+    signal   = 0.6, 
+    m        = 5,
     split_ratio = c(4, 4),
     K_si     = 4,
     C_lambda_beta = 0.3,
@@ -987,8 +959,8 @@ run_power_PLSIM <- function(
     
     tryCatch({
       
-      dat <- generate_PLSIM_data(
-        n = n, p = p, q = q, s = s, scenario = scenario, c = c
+      dat <- generate_PLSIM_data_signal(
+        n = n, p = p, q = q, s = s, scenario = scenario, c = c, signal = signal, m = m
       )
       
       test_res <- PLSIM_test_split_ratio_cross2(
@@ -1035,13 +1007,13 @@ run_power_PLSIM <- function(
 start_time <- Sys.time()
 
 res_size <- run_power_PLSIM(
-  n_sims = 1000, n = 800, p = 10, q = 10, s = 10, scenario = "H0", c = 1,
-  split_ratio = c(4, 4), K_si = 4, C_lambda_beta = 0.3, C_lambda_theta = 1,
+  n_sims = 1000, n = 800, p = 10, q = 10, s = 10, scenario = "H1-low", c = 1, 
+  signal = 0.3, m = 10, C_lambda_beta = 0.3, C_lambda_theta = 1,
   ncores = 10, seed = 123
 )
 
-# setwd("results/different_c/")
-# save(res_size, file = "exp(-t_val^2)_n800_d10_s10_nsims1000_res_size.RData")
+# setwd("results/correlated/")
+# save(res_size, file = "cos(2t_val)_n800_d20_s20_nsims1000_sigma03_size.RData")
 
 end_time <- Sys.time()
 end_time - start_time  
@@ -1054,50 +1026,4 @@ mean(rr$p_21 < 0.05, na.rm = TRUE)
 mean(rr$p_CCT < 0.05, na.rm = TRUE)
 
 
-
-
-################################################################################
-# Power under different values of c
-################################################################################
-
-setwd("results/different_c/")
-
-start_time <- Sys.time()
-
-# "case1", "case2", "case3"
-scenarios <- c("case3")
-c_values  <- c(0.25, 0.5, 0.75, 1)
-
-for (scenario in scenarios) {
-  for (c in c_values) {
-    
-    cat("Running scenario:", scenario, ", c =", c, "\n")
-    
-    res_size <- run_power_PLSIM(
-      n_sims = 1000, n = 800, p = 20, q = 20, s = 20, scenario = scenario, c = c,
-      split_ratio = c(4, 4), K_si = 4, C_lambda_beta = 0.3, C_lambda_theta = 1,
-      ncores = 10, seed = 123
-    )
-    
-    save(
-      res_size,
-      file = paste0(
-        "exp(-t_val^2)_n800_d20_s20_", "c", c, "_", scenario, "_nsims1000.RData")
-    )
-
-    rr <- res_size$raw_results
-    
-    cat(sprintf(
-      "Power: p12=%.4f, p21=%.4f, p_CCT=%.4f\n\n",
-      mean(rr$p_12 < 0.05, na.rm = TRUE),
-      mean(rr$p_21 < 0.05, na.rm = TRUE),
-      mean(rr$p_CCT < 0.05, na.rm = TRUE)
-    ))
-
-  }
-}
-
-
-end_time <- Sys.time()
-end_time - start_time  
 

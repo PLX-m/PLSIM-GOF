@@ -5,14 +5,14 @@ df <- data.frame(
   c = rep(c(0, 0.25, 0.5, 0.75, 1), times = 6),
   value = c(
     # n=800, d=s=10：Z1, Z2, CCT
-    0.044, 0.885, 0.876, 0.886, 0.891,
-    0.037, 0.869, 0.868, 0.889, 0.893,
-    0.039, 0.916, 0.920, 0.932, 0.933,
+    0.025, 0.931, 0.933, 0.930, 0.955,
+    0.029, 0.925, 0.936, 0.937, 0.945,
+    0.027, 0.966, 0.967, 0.961, 0.971,
     
     # n=800, d=s=20：Z1, Z2, CCT
-    0.058, 0.544, 0.740, 0.754, 0.793,
-    0.042, 0.581, 0.714, 0.765, 0.773,
-    0.056, 0.668, 0.814, 0.847, 0.858
+    0.033, 0.645, 0.806, 0.830, 0.846,
+    0.037, 0.629, 0.817, 0.832, 0.826,
+    0.036, 0.756, 0.882, 0.887, 0.913
   ),
   Method = rep(c("Z1", "Z2", "Tc"), each = 5, times = 2),
   scenario = rep(c("d10", "d20"), each = 15)
@@ -59,7 +59,7 @@ p1 <- ggplot(subset(df, scenario == "d10"),
       expression(T[C])
     )
   ) +
-  # geom_hline(yintercept = 0.05, linetype = "dashed") +
+  geom_hline(yintercept = 0.05, linetype = "dashed") +
   scale_x_continuous(breaks = c(0, 0.25, 0.5, 0.75, 1)) +
   scale_y_continuous(limits = c(0, 1)) +
   labs(
@@ -94,7 +94,7 @@ p2 <- ggplot(subset(df, scenario == "d20"),
       expression(T[C])
     )
   ) +
-  # geom_hline(yintercept = 0.05, linetype = "dashed") +
+  geom_hline(yintercept = 0.05, linetype = "dashed") +
   scale_x_continuous(breaks = c(0, 0.25, 0.5, 0.75, 1)) +
   scale_y_continuous(limits = c(0, 1)) +
   labs(
@@ -118,11 +118,10 @@ p2 <- ggplot(subset(df, scenario == "d20"),
 # ==============================
 p1 + p2
 
+setwd("E:/PLX/回归误差-拟合优度检验0511/code/R_0904/joint_scale/different c/plot/t_val2/")
 
-setwd("plot/t_val2/")
-# 
 p_final <- (p1 + p2) + plot_layout(guides = "collect")
-# 
+ 
 ggsave(
   filename = "power_plot_t_val^2.pdf",
   plot = p_final,

@@ -5,16 +5,16 @@ df <- data.frame(
   c = rep(c(0, 0.25, 0.5, 0.75, 1), times = 8),
   value = c(
     # n=800, d=s=10：Z1, Z2, CCT, Ln
-    0.058, 0.849, 0.953, 0.972, 0.974,
-    0.053, 0.846, 0.953, 0.961, 0.975,
-    0.064, 0.894, 0.968, 0.977, 0.988,
-    0.034, 0.052, 0.142, 0.188, 0.220,
+    0.055, 0.607, 0.970, 0.998, 0.998,
+    0.043, 0.617, 0.979, 0.993, 0.998,
+    0.056, 0.705, 0.988, 1.000, 0.999,
+    0.040, 0.040, 0.066, 0.162, 0.195,
     
     # n=800, d=s=20：Z1, Z2, CCT, Ln
-    0.053, 0.604, 0.837, 0.894, 0.902,
-    0.052, 0.618, 0.850, 0.895, 0.915,
-    0.050, 0.686, 0.881, 0.929, 0.948,
-    0.050, 0.068, 0.124, 0.170, 0.164
+    0.067, 0.382, 0.738, 0.848, 0.894,
+    0.046, 0.362, 0.713, 0.838, 0.894,
+    0.047, 0.454, 0.807, 0.920, 0.942,
+    0.056, 0.057, 0.087, 0.170, 0.187
   ),
   Method = rep(c("Z1", "Z2", "Tc", "Ln"), each = 5, times = 2),
   scenario = rep(c("d10", "d20"), each = 20)
@@ -63,7 +63,7 @@ p1 <- ggplot(subset(df, scenario == "d10"),
       expression(L[n])
     )
   ) +
-  # geom_hline(yintercept = 0.05, linetype = "dashed") +
+  geom_hline(yintercept = 0.05, linetype = "dashed") +
   scale_x_continuous(breaks = c(0, 0.25, 0.5, 0.75, 1)) +
   scale_y_continuous(limits = c(0, 1)) +
   labs(
@@ -99,7 +99,7 @@ p2 <- ggplot(subset(df, scenario == "d20"),
       expression(L[n])
     )
   ) +
-  # geom_hline(yintercept = 0.05, linetype = "dashed") +
+  geom_hline(yintercept = 0.05, linetype = "dashed") +
   scale_x_continuous(breaks = c(0, 0.25, 0.5, 0.75, 1)) +
   scale_y_continuous(limits = c(0, 1)) +
   labs(
@@ -124,7 +124,7 @@ p2 <- ggplot(subset(df, scenario == "d20"),
 p1 + p2
 
 
-setwd("plot/cos(2t_val)/")
+setwd("E:/PLX/回归误差-拟合优度检验0511/code/R_0904/joint_scale/different c/plot/cos(2t_val)/")
 # 
 p_final <- (p1 + p2) + plot_layout(guides = "collect")
 # 
