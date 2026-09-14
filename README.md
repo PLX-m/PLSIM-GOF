@@ -16,3 +16,11 @@ Code and simulation results for goodness-of-fit testing in partially linear sing
 - `plot/`: plotting code and figures for the low-dimensional simulation examples.
 - `requirements.txt`: Python package requirements.
 - `R_session_info.txt`: information on the R environment used for the numerical experiments.
+
+## Usage
+
+Run the scripts from the root directory of the repository.
+
+The R scripts call Python through the `reticulate` package. If needed, change the Python path in the scripts to the Python environment on your local machine.
+
+Numerical experiments were conducted on multiple computing devices. The provided `R_session_info.txt` documents one of the R environments used in the experiments, and `requirements.txt` records the Python package dependencies used to run the code.
