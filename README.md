@@ -25,4 +25,4 @@ The R scripts call Python through the `reticulate` package. If needed, change th
 
 Numerical experiments were conducted on multiple computing devices. The provided `R_session_info.txt` documents one of the R environments used in the experiments, and `requirements.txt` records the Python package dependencies used to run the code.
 
-The implementation of the comparison method \(L_n\) is not included in this repository. Please refer to the original paper for details of the \(L_n\) method.
+The implementation of the comparison method Ln is not included in this repository. Please refer to the original paper for details.
