@@ -19,9 +19,7 @@ Code and simulation results for goodness-of-fit testing in partially linear sing
 
 ## Usage
 
-Run the scripts from the root directory of the repository.
-
-The R scripts call Python through the `reticulate` package. If needed, configure `reticulate` to use an appropriate Python environment on your local machine.
+The R scripts call Python through the `reticulate` package. Please change the Python interpreter path in the scripts to the Python environment on your local machine if needed.
 
 Numerical experiments were conducted on multiple computing devices. The provided `R_session_info.txt` documents one of the R environments used in the experiments, and `requirements.txt` records the Python package dependencies used to run the code.
 
