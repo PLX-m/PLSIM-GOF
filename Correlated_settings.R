@@ -992,7 +992,8 @@ run_power_PLSIM <- function(
     settings = list(
       n_sims = n_sims, n = n, p = p, q = q, s = s, scenario = scenario, c = c,
       split_ratio = split_ratio, K_si = K_si, C_lambda_beta = C_lambda_beta,
-      C_lambda_theta = C_lambda_theta, ncores = ncores, seed = seed
+      C_lambda_theta = C_lambda_theta, ncores = ncores, seed = seed, signal = signal, 
+      m = m
     ),
     
     raw_results = as.data.frame(res_mat)
@@ -1007,13 +1008,12 @@ run_power_PLSIM <- function(
 start_time <- Sys.time()
 
 res_size <- run_power_PLSIM(
-  n_sims = 1000, n = 800, p = 10, q = 10, s = 10, scenario = "H1-low", c = 1, 
-  signal = 0.3, m = 10, C_lambda_beta = 0.3, C_lambda_theta = 1,
+  n_sims = 1000, n = 800, p = 20, q = 20, s = 20, scenario = "H1-low", c = 1, 
+  signal = 0.3, m = 20, C_lambda_beta = 0.3, C_lambda_theta = 1,
   ncores = 10, seed = 123
 )
 
-# setwd("results/correlated/")
-# save(res_size, file = "cos(2t_val)_n800_d20_s20_nsims1000_sigma03_size.RData")
+save(res_size, file = "results/correlated/cos(2t_val)_n800_d20_s20_nsims1000_sigma03_size.RData")
 
 end_time <- Sys.time()
 end_time - start_time  

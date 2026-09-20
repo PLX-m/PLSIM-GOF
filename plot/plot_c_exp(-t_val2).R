@@ -31,12 +31,9 @@ legend_text_size <- 14  # 图例文字字体大小
 legend_title_size <- 16 # 图例标题字体大小
 
 
-# my_cols <- c(
-#   "Z1" = "#00BFC4",
-#   "Z2" = "#E69F00",
-#   "Tc" = "#F8766D"
-# )
-
+# ==============================
+# 颜色
+# ==============================
 my_cols <- c(
   "Z1" = "#3B82B8",
   "Z2" = "#E69F00",
@@ -44,25 +41,66 @@ my_cols <- c(
   "Ln" = "#59A14F"
 )
 
+# ==============================
+# 线型
+# ==============================
+my_linetypes <- c(
+  "Z1" = "solid",
+  "Z2" = "solid",
+  "Tc" = "solid",
+  "Ln" = "solid"
+)
+
+# ==============================
+# 点的形状
+# ==============================
+my_shapes <- c(
+  "Z1" = 16,   # 圆点
+  "Z2" = 17,   # 三角形
+  "Tc" = 15,   # 方块
+  "Ln" = 8     # 星形
+)
+
+# 图例标签
+my_labels <- c(
+  expression(Z[n]^{(1)}),
+  expression(Z[n]^{(2)}),
+  expression(T[C]),
+  expression(L[n])
+)
+
 
 
 # ==============================
 # d=10 图
 # ==============================
-p1 <- ggplot(subset(df, scenario == "d10"),
-             aes(x = c, y = value, color = Method)) +
+p1 <- ggplot(
+  subset(df, scenario == "d10"),
+  aes(
+    x = c, y = value,
+    color = Method,
+    linetype = Method,
+    shape = Method
+  )
+) +
   geom_line(linewidth = 1.2) +
   geom_point(size = 3) +
   scale_color_manual(
     values = my_cols,
     breaks = c("Z1", "Z2", "Tc", "Ln"),
-    labels = c(
-      expression(Z[n]^{(1)}),
-      expression(Z[n]^{(2)}),
-      expression(T[C]),
-      expression(L[n])
-    )
-  )+
+    labels = my_labels
+  ) + 
+  scale_linetype_manual(
+    values = my_linetypes,
+    breaks = c("Z1", "Z2", "Tc", "Ln"),
+    labels = my_labels
+  ) +
+  scale_shape_manual(
+    values = my_shapes,
+    breaks = c("Z1", "Z2", "Tc", "Ln"),
+    labels = my_labels
+  ) +
+  # 5% 显著性水平
   geom_hline(yintercept = 0.05, linetype = "dashed") +
   scale_x_continuous(breaks = c(0, 0.25, 0.5, 0.75, 1)) +
   scale_y_continuous(limits = c(0, 1)) +
@@ -85,20 +123,33 @@ p1 <- ggplot(subset(df, scenario == "d10"),
 # ==============================
 # d=20 图
 # ==============================
-p2 <- ggplot(subset(df, scenario == "d20"),
-             aes(x = c, y = value, color = Method)) +
+p2 <- ggplot(
+  subset(df, scenario == "d20"),
+  aes(
+    x = c, y = value,
+    color = Method,
+    linetype = Method,
+    shape = Method
+  )
+) +
   geom_line(linewidth = 1.2) +
   geom_point(size = 3) +
   scale_color_manual(
     values = my_cols,
     breaks = c("Z1", "Z2", "Tc", "Ln"),
-    labels = c(
-      expression(Z[n]^{(1)}),
-      expression(Z[n]^{(2)}),
-      expression(T[C]),
-      expression(L[n])
-    )
+    labels = my_labels
+  ) + 
+  scale_linetype_manual(
+    values = my_linetypes,
+    breaks = c("Z1", "Z2", "Tc", "Ln"),
+    labels = my_labels
   ) +
+  scale_shape_manual(
+    values = my_shapes,
+    breaks = c("Z1", "Z2", "Tc", "Ln"),
+    labels = my_labels
+  ) +
+  # 5% 显著性水平
   geom_hline(yintercept = 0.05, linetype = "dashed") +
   scale_x_continuous(breaks = c(0, 0.25, 0.5, 0.75, 1)) +
   scale_y_continuous(limits = c(0, 1)) +
@@ -118,16 +169,18 @@ p2 <- ggplot(subset(df, scenario == "d20"),
     
   )
 
+
+
 # ==============================
 # 拼接（横向）
 # ==============================
 p1 + p2
 
 
-setwd("E:/PLX/回归误差-拟合优度检验0511/code/R_0904/joint_scale/different c/plot/exp(-t_val2)/")
-#
+setwd("E:/PLX/回归误差-拟合优度检验0511/code/R_0904/PLSIM-GitHub-0918/plot/exp(-t_val2)/")
+
 p_final <- (p1 + p2) + plot_layout(guides = "collect")
-#
+
 ggsave(
   filename = "power_plot_exp(-t_val2).pdf",
   plot = p_final,

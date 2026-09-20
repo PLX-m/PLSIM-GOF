@@ -1013,8 +1013,8 @@ res_size <- run_power_PLSIM(
   ncores = 10, seed = 123
 )
 
-setwd("results/high/")
-save(res_size, file = "exp(-t_val^2)_n1000_d600_s20_nsims1000_res_size.RData")
+
+save(res_size, file = "results/high/exp(-t_val^2)_n1000_d600_s20_nsims1000_res_size.RData")
 
 end_time <- Sys.time()
 end_time - start_time  

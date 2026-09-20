@@ -819,35 +819,6 @@ result$stat_21$p_linear
 result$p_CCT_linear
 
 
-# 正交化诊断
-# 12:
-result$stat_12$linear_orth_before_final
-result$stat_12$linear_orth_after_final
-result$stat_12$spline_orth_before
-result$stat_12$spline_orth_after
-result$stat_12$theta_orth_before
-result$stat_12$theta_orth_after
-
-result$stat_12$linear_kkt_ratio          # <=1
-result$stat_12$theta_kkt_ratio           # <=1
-result$stat_12$theta_kkt_ratio_by_fold   # <=1
-
-
-# 21:
-result$stat_21$linear_orth_before_final
-result$stat_21$linear_orth_after_final
-result$stat_21$spline_orth_before
-result$stat_21$spline_orth_after
-result$stat_21$theta_orth_before
-result$stat_21$theta_orth_after
-
-result$stat_21$linear_kkt_ratio          # <=1
-result$stat_21$theta_kkt_ratio           # <=1
-result$stat_21$theta_kkt_ratio_by_fold   # <=1
-
-
-
-
 
 
 # =========================
@@ -1040,8 +1011,8 @@ res_size <- run_power_PLSIM(
   ncores = 10, seed = 123
 )
 
-# setwd("results/different_c/")
-# save(res_size, file = "exp(-t_val^2)_n800_d10_s10_nsims1000_res_size.RData")
+
+save(res_size, file = "results/different_c/exp(-t_val^2)_n800_d10_s10_nsims1000_res_size.RData")
 
 end_time <- Sys.time()
 end_time - start_time  
@@ -1060,7 +1031,6 @@ mean(rr$p_CCT < 0.05, na.rm = TRUE)
 # Power under different values of c
 ################################################################################
 
-setwd("results/different_c/")
 
 start_time <- Sys.time()
 
@@ -1082,7 +1052,7 @@ for (scenario in scenarios) {
     save(
       res_size,
       file = paste0(
-        "exp(-t_val^2)_n800_d20_s20_", "c", c, "_", scenario, "_nsims1000.RData")
+        "results/different_c/exp(-t_val^2)_n800_d20_s20_", "c", c, "_", scenario, "_nsims1000.RData")
     )
 
     rr <- res_size$raw_results
