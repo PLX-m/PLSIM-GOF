@@ -169,7 +169,7 @@ p2 <- ggplot(
 # ==============================
 p1 + p2
 
-setwd("E:/PLX/回归误差-拟合优度检验0511/code/R_0904/PLSIM-GitHub-0918/plot/t_val2/")
+setwd("plot/t_val2/")
 
 p_final <- (p1 + p2) + plot_layout(guides = "collect")
 

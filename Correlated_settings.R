@@ -1008,7 +1008,7 @@ run_power_PLSIM <- function(
 start_time <- Sys.time()
 
 res_size <- run_power_PLSIM(
-  n_sims = 1000, n = 800, p = 20, q = 20, s = 20, scenario = "H1-low", c = 1, 
+  n_sims = 1000, n = 800, p = 20, q = 20, s = 20, scenario = "H0", c = 1, 
   signal = 0.3, m = 20, C_lambda_beta = 0.3, C_lambda_theta = 1,
   ncores = 10, seed = 123
 )
