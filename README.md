@@ -23,8 +23,7 @@ The R scripts call Python through the `reticulate` package. Please change the Py
 
 Numerical experiments were conducted on multiple computing devices. The provided `R_session_info.txt` and `requirements.txt` document one representative R/Python environment used in the experiments, in which Python 3.13.5 (64-bit) was used.
 
-The implementation of the comparison method Ln is not included in this repository. The code used to obtain the reported Ln results was provided privately by the authors of the original paper upon request and is not redistributed here. The original parameter settings were used without modification.
-
+The implementation of the comparison method `Ln` is not included in this repository. The code used to obtain the reported `Ln` results was provided privately by the authors of the original paper upon request and is not redistributed here. The authors' original implementation and parameter settings were used without modification.
 
 ## Reproducing Examples 1--3
 
@@ -36,6 +35,7 @@ The baseline single-index link for Examples 1--3 is selected manually in `Low_di
 | Example 2 / HD-2 | `cos(2*t_val)` | `H0` | `case2` |
 | Example 3 / HD-3 | `exp(-t_val^2)` | `H0` | `case3` |
 
+The reported low-dimensional simulations use N=800, with p=q=s=10 or 20, whereas the high-dimensional simulations use N=1000, s=20, and p=q=600 or 2000. The master random seed is 123. The corresponding results are stored in `results/different_c/` and `results/high/`, respectively.
 
 ## Simulation replications
 
