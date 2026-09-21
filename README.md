@@ -21,6 +21,24 @@ Code and simulation results for goodness-of-fit testing in partially linear sing
 
 The R scripts call Python through the `reticulate` package. Please change the Python interpreter path in the scripts to the Python environment on your local machine if needed.
 
-Numerical experiments were conducted on multiple computing devices. The provided `R_session_info.txt` documents one of the R environments used in the experiments, and `requirements.txt` records the Python package dependencies used to run the code.
+Numerical experiments were conducted on multiple computing devices. The provided `R_session_info.txt` and `requirements.txt` document one representative R/Python environment used in the experiments, in which Python 3.13.5 (64-bit) was used.
 
-The implementation of the comparison method Ln is not included in this repository. Please refer to the original paper for implementation details.
+The implementation of the comparison method Ln is not included in this repository. The code used to obtain the reported Ln results was provided privately by the authors of the original paper upon request and is not redistributed here. The original parameter settings were used without modification.
+
+
+## Reproducing Examples 1--3
+
+The baseline single-index link for Examples 1--3 is selected manually in `Low_dimension_example123.R` and `High_dimension_example_HD123.R`. Before running a given example, uncomment the corresponding `Y_base` line and comment out the other two. The `scenario` argument specifies the null or alternative setting. The corresponding configurations are as follows:
+
+| Example | Baseline single-index link | Null scenario | Alternative scenario |
+| --- | --- | --- | --- |
+| Example 1 / HD-1 | `t_val^2` | `H0` | `case1` |
+| Example 2 / HD-2 | `cos(2*t_val)` | `H0` | `case2` |
+| Example 3 / HD-3 | `exp(-t_val^2)` | `H0` | `case3` |
+
+
+## Simulation replications
+
+Each simulation configuration was attempted 1000 times. One replication in the alternative setting of Example HD-2 with \(p=q=600\) and two replications in the high-dimensional correlated-covariate alternative setting did not yield valid test p-values and were recorded as missing values. The corresponding rejection rates were calculated using the successful replications only; all other reported configurations used the full 1000 replications.
+
+
