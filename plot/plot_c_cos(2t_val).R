@@ -175,12 +175,10 @@ p2 <- ggplot(
 p1 + p2
 
 
-setwd("/plot/cos(2t_val)/")
-
 p_final <- (p1 + p2) + plot_layout(guides = "collect")
  
 ggsave(
-  filename = "power_plot_cos(2t_val).pdf",
+  filename = "plot/cos(2t_val)/power_plot_cos(2t_val).pdf",
   plot = p_final,
   width = 12,
   height = 5,

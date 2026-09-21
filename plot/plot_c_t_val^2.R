@@ -169,12 +169,10 @@ p2 <- ggplot(
 # ==============================
 p1 + p2
 
-setwd("plot/t_val2/")
-
 p_final <- (p1 + p2) + plot_layout(guides = "collect")
 
 ggsave(
-  filename = "power_plot_t_val^2.pdf",
+  filename = "plot/t_val2/power_plot_t_val^2.pdf",
   plot = p_final,
   width = 12,
   height = 5,

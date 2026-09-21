@@ -176,13 +176,10 @@ p2 <- ggplot(
 # ==============================
 p1 + p2
 
-
-setwd("plot/exp(-t_val2)/")
-
 p_final <- (p1 + p2) + plot_layout(guides = "collect")
 
 ggsave(
-  filename = "power_plot_exp(-t_val2).pdf",
+  filename = "plot/exp(-t_val2)/power_plot_exp(-t_val2).pdf",
   plot = p_final,
   width = 12,
   height = 5,
