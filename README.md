@@ -1,6 +1,6 @@
 # PLSIM-GOF
 
-Code and simulation results for `Learning from Residuals: Goodness-of-Fit Testing for High-Dimensional Partial Linear Single-Index Models`.
+Code and simulation results for the paper "Learning from Residuals: Goodness-of-Fit Testing for High-Dimensional Partial Linear Single-Index Models".
 
 ## Files
 
