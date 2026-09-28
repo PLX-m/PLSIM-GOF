@@ -1,6 +1,6 @@
 # PLSIM-GOF
 
-Code and simulation results for goodness-of-fit testing in partially linear single-index models.
+Code and simulation results for `Learning from Residuals: Goodness-of-Fit Testing for High-Dimensional Partial Linear Single-Index Models`.
 
 ## Files
 
